@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Keedian Retail Team Checklist</title>
+<title>Keedian Retail Overnight Checklist</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
 <meta name="theme-color" content="#0b76ef">
 <style>
@@ -11,75 +11,114 @@ input[type=checkbox] { cursor: pointer; }
 li { display: flex; align-items: center; }
 </style>
 </head>
+
 <body class="bg-gray-100 p-6">
 <div class="max-w-4xl mx-auto">
-<h1 class="text-3xl font-bold text-center mb-6">Keedian Retail Team Checklist</h1>
+    
+<h1 class="text-3xl font-bold text-center mb-6">Overnight Team Checklist</h1>
+
 <div class="flex justify-between mb-4">
-<select id="templateSelect" class="border p-2 rounded">
-<option value="overnight">Overnight Checklist</option>
-<option value="daily">Daily Checklist</option>
-<option value="weekend">Weekend Checklist</option>
-</select>
-<button id="resetBtn" class="bg-red-500 text-white px-3 py-1 rounded">Reset</button>
+    <button id="refreshBtn" class="bg-gray-500 text-white px-3 py-1 rounded">Refresh</button>
+    <button id="saveBtn" class="bg-green-600 text-white px-3 py-1 rounded">Save</button>
 </div>
+
 <ul id="checklist" class="list-disc pl-6 space-y-2 mb-4"></ul>
-<div class="flex gap-2">
-<input id="newItem" type="text" placeholder="Add new item" class="border p-2 rounded flex-1">
-<button id="addBtn" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
+
+<div class="flex gap-2 mb-6">
+    <input id="newItem" type="text" placeholder="Add new item" class="border p-2 rounded flex-1">
+    <button id="addBtn" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
 </div>
+
+<textarea id="summaryOutput" class="w-full h-40 border p-3 rounded" placeholder="Summary will generate here automatically…"></textarea>
+
 </div>
+
 <script>
-const templates = {
-overnight: ["Vaccine Case Alarms Checked","JCP Alarms Reviewed for Winter Issues","Follow-ups for Clients","Overflow Emails from End of Shift","Review Project Work"],
-daily: ["JIRA Tickets","Paycom Training","Daily Team Sync","Workday Tasks","DD Portal Review"],
-weekend: ["Audit Systems","Inventory Review","Server Backups","Emails Review"]
-};
+const template = [
+    "Vaccine Case Alarms Checked",
+    "JCP Alarms Reviewed for Winter Issues",
+    "Follow-ups for Clients",
+    "Overflow Emails from End of Shift",
+    "Review Project Work"
+];
 
-
-let currentTemplate = 'overnight';
-
-
-function renderChecklist(){
-const container = document.getElementById('checklist');
-container.innerHTML = '';
-templates[currentTemplate].forEach((item, i)=>{
-const li = document.createElement('li');
-const checkbox = document.createElement('input');
-checkbox.type = 'checkbox';
-checkbox.className = 'mr-2';
-checkbox.id = `item-${currentTemplate}-${i}`;
-const label = document.createElement('label');
-label.htmlFor = checkbox.id;
-label.textContent = item;
-li.appendChild(checkbox);
-li.appendChild(label);
-container.appendChild(li);
-});
+function loadState() {
+    const saved = JSON.parse(localStorage.getItem('overnightChecklist'));
+    return saved ? saved : template.map(item => ({ text: item, checked: false }));
 }
 
+let checklistState = loadState();
 
-document.getElementById('templateSelect').addEventListener('change', (e)=>{
-currentTemplate = e.target.value;
-renderChecklist();
-});
-
-
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-renderChecklist();
-});
-
-
-document.getElementById('addBtn').addEventListener('click', ()=>{
-const val = document.getElementById('newItem').value.trim();
-if(val){
-templates[currentTemplate].push(val);
-document.getElementById('newItem').value = '';
-renderChecklist();
+function saveState() {
+    localStorage.setItem('overnightChecklist', JSON.stringify(checklistState));
 }
+
+function renderChecklist() {
+    const container = document.getElementById('checklist');
+    container.innerHTML = '';
+
+    checklistState.forEach((item, i) => {
+        const li = document.createElement('li');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'mr-2';
+        checkbox.checked = item.checked;
+        checkbox.addEventListener('change', () => {
+            item.checked = checkbox.checked;
+            saveState();
+            generateSummary();
+        });
+
+        const label = document.createElement('label');
+        label.textContent = item.text;
+
+        li.appendChild(checkbox);
+        li.appendChild(label);
+        container.appendChild(li);
+    });
+
+    generateSummary();
+}
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+    location.reload();
 });
 
+document.getElementById('saveBtn').addEventListener('click', () => {
+    saveState();
+    alert("Checklist saved!");
+});
+
+document.getElementById('addBtn').addEventListener('click', () => {
+    const val = document.getElementById('newItem').value.trim();
+    if (val) {
+        checklistState.push({ text: val, checked: false });
+        document.getElementById('newItem').value = '';
+        saveState();
+        renderChecklist();
+    }
+});
+
+function generateSummary() {
+    const date = new Date().toLocaleDateString();
+    const completed = checklistState.filter(i => i.checked).map(i => "- " + i.text).join("\n");
+    const incomplete = checklistState.filter(i => !i.checked).map(i => "- " + i.text).join("\n");
+
+    const summary = 
+`Overnight Checklist – ${date}
+
+Completed:
+${completed || "- None"}
+
+Incomplete:
+${incomplete || "- None"}`;
+
+    document.getElementById('summaryOutput').value = summary;
+}
 
 renderChecklist();
 </script>
+
 </body>
 </html>
