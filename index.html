@@ -5,26 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Keedian Overnight Checklist Dashboard</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<meta name="theme-color" content="#0b76ef">
 <style>
-body { transition: background 0.3s, color 0.3s; }
+html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; transition: background 0.3s, color 0.3s; }
 textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; max-height: 1200px; }
 button { transition: all 0.2s ease-in-out; }
 li.completed { color: #16a34a; font-weight: 600; }
 li.incomplete { color: #dc2626; font-weight: 600; }
-/* Center page fully */
-html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
+.base-item { font-weight: 600; }
 </style>
 </head>
+<body class="bg-gray-100 text-gray-900">
 
-<body class="font-sans bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-
-<div class="w-full max-w-6xl flex flex-col items-center gap-8">
+<div id="dashboard" class="w-full max-w-6xl flex flex-col items-center gap-8">
 
     <!-- Header -->
     <div class="text-center">
-        <h1 class="text-5xl font-extrabold text-blue-800 dark:text-blue-400 mb-2">Keedian Retail Overnight Dashboard</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-300">Streamlined reporting for overnight operations</p>
+        <h1 class="text-5xl font-extrabold text-blue-800 mb-2">Keedian Retail Overnight Dashboard</h1>
+        <p class="text-lg text-gray-600">Streamlined reporting for overnight operations</p>
     </div>
 
     <!-- Mode Toggle -->
@@ -37,23 +34,23 @@ html, body { height: 100%; margin: 0; display: flex; align-items: center; justif
     </div>
 
     <!-- Checklist Card -->
-    <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
+    <div id="checklistCard" class="bg-white shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
         <button id="toggleChecklist" class="flex justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold mb-4">
             Overnight Checklist
         </button>
         <div id="checklistContainer" class="w-full transition-all duration-300 ease-in-out">
             <ul id="checklist" class="list-disc pl-6 space-y-4 w-full"></ul>
             <div class="flex gap-3 mt-6 w-full">
-                <input id="newItem" type="text" placeholder="Add new item" class="border p-4 rounded-xl flex-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white">
+                <input id="newItem" type="text" placeholder="Add new item" class="border p-4 rounded-xl flex-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Add</button>
             </div>
         </div>
     </div>
 
     <!-- Teams Message Card -->
-    <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
-        <label class="block font-semibold mb-2 text-gray-700 dark:text-gray-300 text-lg">Teams Message</label>
-        <textarea id="summaryOutput" class="w-full border rounded-2xl p-6 shadow-lg bg-gray-50 dark:bg-gray-700 dark:text-white text-gray-800 text-lg"></textarea>
+    <div id="messageCard" class="bg-white shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
+        <label class="block font-semibold mb-2 text-gray-700 text-lg">Teams Message</label>
+        <textarea id="summaryOutput" class="w-full border rounded-2xl p-6 shadow-lg bg-gray-50 text-gray-800 text-lg"></textarea>
         <div class="flex gap-4 mt-4">
             <button id="copyBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Copy to Clipboard</button>
         </div>
@@ -62,7 +59,8 @@ html, body { height: 100%; margin: 0; display: flex; align-items: center; justif
 </div>
 
 <script>
-const template = [
+// Base items
+const baseItems = [
     "Vaccine Case Alarms Checked",
     "JCP Alarms Reviewed for Winter Issues",
     "Follow-ups for Clients",
@@ -70,7 +68,7 @@ const template = [
     "Review Project Work"
 ];
 
-let checklistState = JSON.parse(localStorage.getItem('overnightChecklist')) || template.map(item => ({ text: item, checked: false }));
+let checklistState = JSON.parse(localStorage.getItem('overnightChecklist')) || baseItems.map(item => ({ text: item, checked: false, isBase: true }));
 
 function saveState() {
     localStorage.setItem('overnightChecklist', JSON.stringify(checklistState));
@@ -81,7 +79,8 @@ function renderChecklist() {
     container.innerHTML = '';
     checklistState.forEach((item, i) => {
         const li = document.createElement('li');
-        li.className = item.checked ? "completed flex items-center gap-4" : "incomplete flex items-center gap-4";
+        li.className = `${item.checked ? 'completed' : 'incomplete'} flex items-center gap-4`;
+        if(item.isBase) li.classList.add('base-item');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'w-6 h-6';
@@ -95,6 +94,17 @@ function renderChecklist() {
         label.textContent = item.text;
         li.appendChild(checkbox);
         li.appendChild(label);
+        if(!item.isBase) {
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = "Remove";
+            removeBtn.className = "ml-auto bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full shadow-sm text-sm";
+            removeBtn.addEventListener('click', () => {
+                checklistState.splice(i,1);
+                saveState();
+                renderChecklist();
+            });
+            li.appendChild(removeBtn);
+        }
         container.appendChild(li);
     });
     generateSummary();
@@ -117,11 +127,15 @@ ${incomplete || "- None"}`;
 }
 
 // Events
-document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
+document.getElementById('refreshBtn').addEventListener('click', () => {
+    checklistState = baseItems.map(item => ({ text: item, checked: false, isBase: true }));
+    saveState();
+    renderChecklist();
+});
 document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert("Checklist saved!"); });
 document.getElementById('addBtn').addEventListener('click', () => {
     const val = document.getElementById('newItem').value.trim();
-    if(val) { checklistState.push({ text: val, checked: false }); document.getElementById('newItem').value=''; saveState(); renderChecklist();}
+    if(val) { checklistState.push({ text: val, checked: false, isBase: false }); document.getElementById('newItem').value=''; saveState(); renderChecklist();}
 });
 document.getElementById('copyBtn').addEventListener('click', () => {
     const textarea = document.getElementById('summaryOutput');
@@ -131,9 +145,31 @@ document.getElementById('copyBtn').addEventListener('click', () => {
 const textarea = document.getElementById('summaryOutput');
 textarea.addEventListener('input', () => { textarea.dataset.userEdited = true; });
 
-// Dark/Light Mode
-document.getElementById('modeToggle').addEventListener('click', () => {
-    document.body.classList.toggle('dark');
+// Dark/Light Mode toggle - now works properly
+const modeToggle = document.getElementById('modeToggle');
+modeToggle.addEventListener('click', () => {
+    const body = document.body;
+    const dashboard = document.getElementById('dashboard');
+    const checklistCard = document.getElementById('checklistCard');
+    const messageCard = document.getElementById('messageCard');
+
+    if(body.classList.contains('dark')) {
+        // Switch to light
+        body.classList.remove('dark','bg-gray-900','text-gray-100');
+        body.classList.add('bg-gray-100','text-gray-900');
+        checklistCard.classList.remove('bg-gray-800','text-gray-100');
+        checklistCard.classList.add('bg-white','text-gray-900');
+        messageCard.classList.remove('bg-gray-800','text-gray-100');
+        messageCard.classList.add('bg-white','text-gray-900');
+    } else {
+        // Switch to dark
+        body.classList.add('dark','bg-gray-900','text-gray-100');
+        body.classList.remove('bg-gray-100','text-gray-900');
+        checklistCard.classList.add('bg-gray-800','text-gray-100');
+        checklistCard.classList.remove('bg-white','text-gray-900');
+        messageCard.classList.add('bg-gray-800','text-gray-100');
+        messageCard.classList.remove('bg-white','text-gray-900');
+    }
 });
 
 // Collapsible Checklist
@@ -142,7 +178,7 @@ const checklistContainer = document.getElementById('checklistContainer');
 toggleBtn.addEventListener('click', () => {
     checklistContainer.classList.toggle('hidden');
 });
-  
+
 // Initial render
 renderChecklist();
 </script>
