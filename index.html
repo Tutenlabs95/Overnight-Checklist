@@ -3,60 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Keedian Overnight Checklist</title>
+<title>Keedian Overnight Checklist Dashboard</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
 <meta name="theme-color" content="#0b76ef">
 <style>
-input[type=checkbox] { cursor: pointer; }
-li { display: flex; align-items: center; }
 body { transition: background 0.3s, color 0.3s; }
-textarea { resize: both; min-width: 300px; min-height: 400px; max-width: 100%; max-height: 1000px; }
+textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; max-height: 1200px; }
 button { transition: all 0.2s ease-in-out; }
+li.completed { color: #16a34a; font-weight: 600; }
+li.incomplete { color: #dc2626; font-weight: 600; }
 </style>
 </head>
 
-<body class="font-sans flex items-center justify-center min-h-screen p-4 bg-gray-100 text-gray-900">
-<div class="w-full max-w-6xl bg-white dark:bg-gray-900 shadow-2xl rounded-3xl p-10 flex flex-col items-center transition-colors">
+<body class="font-sans flex items-center justify-center min-h-screen p-4 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+<div class="w-full max-w-6xl flex flex-col items-center gap-8">
 
     <!-- Header -->
-    <div class="text-center mb-8">
-        <h1 class="text-5xl font-extrabold text-blue-800 dark:text-blue-400 mb-2">Keedian Retail Overnight Checklist</h1>
+    <div class="text-center">
+        <h1 class="text-5xl font-extrabold text-blue-800 dark:text-blue-400 mb-2">Keedian Retail Overnight Dashboard</h1>
         <p class="text-lg text-gray-600 dark:text-gray-300">Streamlined reporting for overnight operations</p>
     </div>
 
-    <!-- Dark/Light Mode Toggle -->
-    <div class="flex justify-center mb-6">
-        <button id="modeToggle" class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg font-semibold">Toggle Dark/Light Mode</button>
-    </div>
+    <!-- Mode Toggle -->
+    <button id="modeToggle" class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg font-semibold hover:scale-105">Toggle Dark/Light Mode</button>
 
-    <!-- Control Buttons -->
-    <div class="flex justify-center gap-4 mb-6">
+    <!-- Controls -->
+    <div class="flex gap-4">
         <button id="refreshBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Refresh</button>
         <button id="saveBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Save</button>
     </div>
 
-    <!-- Checklist Section -->
-    <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl shadow-inner mb-8 w-full">
-        <button id="toggleChecklist" class="flex justify-between w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold items-center">
+    <!-- Checklist Card -->
+    <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
+        <button id="toggleChecklist" class="flex justify-between w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold items-center mb-4">
             <span>Overnight Checklist</span>
             <span id="toggleIcon">▼</span>
         </button>
-        <div id="checklistContainer" class="mt-4">
+        <div id="checklistContainer" class="w-full transition-all duration-300 ease-in-out">
             <ul id="checklist" class="list-disc pl-6 space-y-4"></ul>
-
-            <!-- Add New Item -->
-            <div class="flex gap-3 mt-6">
+            <div class="flex gap-3 mt-6 w-full">
                 <input id="newItem" type="text" placeholder="Add new item" class="border p-4 rounded-xl flex-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white">
                 <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Add</button>
             </div>
         </div>
     </div>
 
-    <!-- Auto-Generated Teams Message -->
-    <div class="mb-4 w-full flex flex-col items-center">
+    <!-- Teams Message Card -->
+    <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
         <label class="block font-semibold mb-2 text-gray-700 dark:text-gray-300 text-lg">Teams Message</label>
         <textarea id="summaryOutput" class="w-full border rounded-2xl p-6 shadow-lg bg-gray-50 dark:bg-gray-700 dark:text-white text-gray-800 text-lg"></textarea>
-        <div class="flex gap-4 mt-3 justify-center w-full">
+        <div class="flex gap-4 mt-4">
             <button id="copyBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Copy to Clipboard</button>
         </div>
     </div>
@@ -83,7 +80,7 @@ function renderChecklist() {
     container.innerHTML = '';
     checklistState.forEach((item, i) => {
         const li = document.createElement('li');
-        li.className = "flex items-center gap-4 text-gray-800 dark:text-gray-200 font-medium";
+        li.className = item.checked ? "completed" : "incomplete flex items-center gap-4";
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'w-6 h-6';
@@ -91,7 +88,7 @@ function renderChecklist() {
         checkbox.addEventListener('change', () => {
             item.checked = checkbox.checked;
             saveState();
-            generateSummary();
+            renderChecklist();
         });
         const label = document.createElement('label');
         label.textContent = item.text;
@@ -118,7 +115,7 @@ ${incomplete || "- None"}`;
     if(!textarea.dataset.userEdited) textarea.value = summary;
 }
 
-// Button Events
+// Events
 document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
 document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert("Checklist saved!"); });
 document.getElementById('addBtn').addEventListener('click', () => {
@@ -133,16 +130,16 @@ document.getElementById('copyBtn').addEventListener('click', () => {
 const textarea = document.getElementById('summaryOutput');
 textarea.addEventListener('input', () => { textarea.dataset.userEdited = true; });
 
-// Dark/Light Mode Toggle
+// Dark/Light Mode
 document.getElementById('modeToggle').addEventListener('click', () => {
     document.body.classList.toggle('dark');
 });
 
-// Collapsible checklist
-const toggleChecklistBtn = document.getElementById('toggleChecklist');
+// Collapsible Checklist
+const toggleBtn = document.getElementById('toggleChecklist');
 const checklistContainer = document.getElementById('checklistContainer');
 const toggleIcon = document.getElementById('toggleIcon');
-toggleChecklistBtn.addEventListener('click', () => {
+toggleBtn.addEventListener('click', () => {
     checklistContainer.classList.toggle('hidden');
     toggleIcon.textContent = checklistContainer.classList.contains('hidden') ? '►' : '▼';
 });
@@ -150,5 +147,6 @@ toggleChecklistBtn.addEventListener('click', () => {
 // Initial render
 renderChecklist();
 </script>
+
 </body>
 </html>
