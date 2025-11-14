@@ -1,67 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Keedian Retail Team Checklist</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-  <meta name="theme-color" content="#0b76ef">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keedian Retail Team Checklist</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+<meta name="theme-color" content="#0b76ef">
+<style>
+input[type=checkbox] { cursor: pointer; }
+li { display: flex; align-items: center; }
+</style>
 </head>
 <body class="bg-gray-100 p-6">
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-6">Keedian Retail Team Checklist</h1>
-    <div class="flex justify-between mb-4">
-      <select id="templateSelect" class="border p-2 rounded">
-        <option value="overnight">Overnight Checklist</option>
-        <option value="daily">Daily Checklist</option>
-        <option value="weekend">Weekend Checklist</option>
-      </select>
-      <button id="resetBtn" class="bg-red-500 text-white px-3 py-1 rounded">Reset</button>
-    </div>
-    <ul id="checklist" class="list-disc pl-6 space-y-2 mb-4"></ul>
-    <div class="flex gap-2">
-      <input id="newItem" type="text" placeholder="Add new item" class="border p-2 rounded flex-1">
-      <button id="addBtn" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
-    </div>
-  </div>
-  <script>
-    const templates = {
-      overnight: ["Vaccine Case Alarms Checked","JCP Alarms Reviewed for Winter Issues","Follow-ups for Clients","Overflow Emails from End of Shift","Review Project Work"],
-      daily: ["JIRA Tickets","Paycom Training","Daily Team Sync","Workday Tasks","DD Portal Review"],
-      weekend: ["Audit Systems","Inventory Review","Server Backups","Emails Review"]
-    };
+<div class="max-w-4xl mx-auto">
+<h1 class="text-3xl font-bold text-center mb-6">Keedian Retail Team Checklist</h1>
+<div class="flex justify-between mb-4">
+<select id="templateSelect" class="border p-2 rounded">
+<option value="overnight">Overnight Checklist</option>
+<option value="daily">Daily Checklist</option>
+<option value="weekend">Weekend Checklist</option>
+</select>
+<button id="resetBtn" class="bg-red-500 text-white px-3 py-1 rounded">Reset</button>
+</div>
+<ul id="checklist" class="list-disc pl-6 space-y-2 mb-4"></ul>
+<div class="flex gap-2">
+<input id="newItem" type="text" placeholder="Add new item" class="border p-2 rounded flex-1">
+<button id="addBtn" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
+</div>
+</div>
+<script>
+const templates = {
+overnight: ["Vaccine Case Alarms Checked","JCP Alarms Reviewed for Winter Issues","Follow-ups for Clients","Overflow Emails from End of Shift","Review Project Work"],
+daily: ["JIRA Tickets","Paycom Training","Daily Team Sync","Workday Tasks","DD Portal Review"],
+weekend: ["Audit Systems","Inventory Review","Server Backups","Emails Review"]
+};
 
-    let currentTemplate = 'overnight';
 
-    function renderChecklist(){
-      const container = document.getElementById('checklist');
-      container.innerHTML = '';
-      templates[currentTemplate].forEach((item, i)=>{
-        const li = document.createElement('li');
-        li.innerHTML = `<input type='checkbox' class='mr-2'>${item}`;
-        container.appendChild(li);
-      });
-    }
+let currentTemplate = 'overnight';
 
-    document.getElementById('templateSelect').addEventListener('change', (e)=>{
-      currentTemplate = e.target.value;
-      renderChecklist();
-    });
 
-    document.getElementById('resetBtn').addEventListener('click', ()=>{
-      renderChecklist();
-    });
+function renderChecklist(){
+const container = document.getElementById('checklist');
+container.innerHTML = '';
+templates[currentTemplate].forEach((item, i)=>{
+const li = document.createElement('li');
+const checkbox = document.createElement('input');
+checkbox.type = 'checkbox';
+checkbox.className = 'mr-2';
+checkbox.id = `item-${currentTemplate}-${i}`;
+const label = document.createElement('label');
+label.htmlFor = checkbox.id;
+label.textContent = item;
+li.appendChild(checkbox);
+li.appendChild(label);
+container.appendChild(li);
+});
+}
 
-    document.getElementById('addBtn').addEventListener('click', ()=>{
-      const val = document.getElementById('newItem').value.trim();
-      if(val){
-        templates[currentTemplate].push(val);
-        document.getElementById('newItem').value = '';
-        renderChecklist();
-      }
-    });
 
-    renderChecklist();
-  </script>
+document.getElementById('templateSelect').addEventListener('change', (e)=>{
+currentTemplate = e.target.value;
+renderChecklist();
+});
+
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+renderChecklist();
+});
+
+
+document.getElementById('addBtn').addEventListener('click', ()=>{
+const val = document.getElementById('newItem').value.trim();
+if(val){
+templates[currentTemplate].push(val);
+document.getElementById('newItem').value = '';
+renderChecklist();
+}
+});
+
+
+renderChecklist();
+</script>
 </body>
 </html>
