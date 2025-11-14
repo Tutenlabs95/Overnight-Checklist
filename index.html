@@ -12,10 +12,12 @@ textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; m
 button { transition: all 0.2s ease-in-out; }
 li.completed { color: #16a34a; font-weight: 600; }
 li.incomplete { color: #dc2626; font-weight: 600; }
+/* Center page fully */
+html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
 </style>
 </head>
 
-<body class="font-sans flex items-center justify-center min-h-screen p-4 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="font-sans bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
 <div class="w-full max-w-6xl flex flex-col items-center gap-8">
 
@@ -26,22 +28,21 @@ li.incomplete { color: #dc2626; font-weight: 600; }
     </div>
 
     <!-- Mode Toggle -->
-    <button id="modeToggle" class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg font-semibold hover:scale-105">Toggle Dark/Light Mode</button>
+    <button id="modeToggle" class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg font-semibold hover:scale-105 mb-6">Toggle Dark/Light Mode</button>
 
     <!-- Controls -->
-    <div class="flex gap-4">
+    <div class="flex gap-4 mb-6">
         <button id="refreshBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Refresh</button>
         <button id="saveBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Save</button>
     </div>
 
     <!-- Checklist Card -->
     <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
-        <button id="toggleChecklist" class="flex justify-between w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold items-center mb-4">
-            <span>Overnight Checklist</span>
-            <span id="toggleIcon">▼</span>
+        <button id="toggleChecklist" class="flex justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold mb-4">
+            Overnight Checklist
         </button>
         <div id="checklistContainer" class="w-full transition-all duration-300 ease-in-out">
-            <ul id="checklist" class="list-disc pl-6 space-y-4"></ul>
+            <ul id="checklist" class="list-disc pl-6 space-y-4 w-full"></ul>
             <div class="flex gap-3 mt-6 w-full">
                 <input id="newItem" type="text" placeholder="Add new item" class="border p-4 rounded-xl flex-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white">
                 <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Add</button>
@@ -80,7 +81,7 @@ function renderChecklist() {
     container.innerHTML = '';
     checklistState.forEach((item, i) => {
         const li = document.createElement('li');
-        li.className = item.checked ? "completed" : "incomplete flex items-center gap-4";
+        li.className = item.checked ? "completed flex items-center gap-4" : "incomplete flex items-center gap-4";
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'w-6 h-6';
@@ -138,12 +139,10 @@ document.getElementById('modeToggle').addEventListener('click', () => {
 // Collapsible Checklist
 const toggleBtn = document.getElementById('toggleChecklist');
 const checklistContainer = document.getElementById('checklistContainer');
-const toggleIcon = document.getElementById('toggleIcon');
 toggleBtn.addEventListener('click', () => {
     checklistContainer.classList.toggle('hidden');
-    toggleIcon.textContent = checklistContainer.classList.contains('hidden') ? '►' : '▼';
 });
-
+  
 // Initial render
 renderChecklist();
 </script>
