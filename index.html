@@ -26,7 +26,20 @@
         }
 
         .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin: 8px 0;
+        }
+
+        .remove-btn {
+            margin-left: auto;
+            padding: 5px 10px;
+            cursor: pointer;
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 6px;
         }
 
         button {
@@ -35,6 +48,7 @@
             width: 100%;
             font-size: 16px;
             cursor: pointer;
+            border-radius: 6px;
         }
 
         #generatedMessage {
@@ -52,27 +66,11 @@
 
 <h3>Checklist</h3>
 
-<div id="checklist">
-    <label class="checklist-item">
-        <input type="checkbox" class="base-item" value="Vaccine Case Alarms Completed During After Hours">
-        Vaccine Case Alarms Completed During After Hours
-    </label>
+<div id="checklist"></div>
 
-    <label class="checklist-item">
-        <input type="checkbox" class="base-item" value="Reviewed and Cleared All Retail Team Client Emails After Hours">
-        Reviewed and Cleared All Retail Team Client Emails After Hours
-    </label>
-
-    <label class="checklist-item">
-        <input type="checkbox" class="base-item" value="Retail Team Client Alarms Cleared During Shift">
-        Retail Team Client Alarms Cleared During Shift
-    </label>
-
-    <label class="checklist-item">
-        <input type="checkbox" class="base-item" value="Confirmed / Reviewed Retail Team Projects">
-        Confirmed / Reviewed Retail Team Projects
-    </label>
-</div>
+<!-- Add New Item -->
+<input type="text" id="newItemText" placeholder="Add a new checklist item...">
+<button onclick="addCustomItem()">Add Item</button>
 
 <button onclick="generateMessage()">Generate Teams Message</button>
 <button onclick="copyMessage()">Copy (Ctrl+C Ready)</button>
@@ -82,12 +80,68 @@
 <textarea id="generatedMessage" placeholder="Generated Teams Message Will Appear Here..."></textarea>
 
 <script>
+/* Base Checklist Items */
+const baseItems = [
+    "Vaccine Case Alarms Completed During After Hours",
+    "Reviewed and Cleared All Retail Team Client Emails After Hours",
+    "Retail Team Client Alarms Cleared During Shift",
+    "Confirmed / Reviewed Retail Team Projects"
+];
+
+let checklistState = [];
+
+/* Render Checklist */
+function renderChecklist() {
+    const container = document.getElementById("checklist");
+    container.innerHTML = "";
+
+    checklistState.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "checklist-item";
+
+        row.innerHTML = `
+            <input type="checkbox" ${item.checked ? "checked" : ""} onchange="toggleCheck(${index})">
+            <span>${item.text}</span>
+            ${item.isBase ? "" : `<button class="remove-btn" onclick="removeItem(${index})">Remove</button>`}
+        `;
+
+        container.appendChild(row);
+    });
+}
+
+/* Toggle Checkbox */
+function toggleCheck(index) {
+    checklistState[index].checked = !checklistState[index].checked;
+}
+
+/* Add Custom Item */
+function addCustomItem() {
+    const text = document.getElementById("newItemText").value.trim();
+    if (!text) return;
+
+    checklistState.push({
+        text,
+        checked: false,
+        isBase: false
+    });
+
+    document.getElementById("newItemText").value = "";
+    renderChecklist();
+}
+
+/* Remove Custom Item */
+function removeItem(index) {
+    checklistState.splice(index, 1);
+    renderChecklist();
+}
+
+/* Generate Teams Message */
 function generateMessage() {
     const name = document.getElementById("teamMemberName").value || "Team Member";
 
-    const items = Array.from(document.querySelectorAll(".base-item"))
-        .filter(box => box.checked)
-        .map(box => "• " + box.value)
+    const items = checklistState
+        .filter(i => i.checked)
+        .map(i => "• " + i.text)
         .join("\n");
 
     const today = new Date().toISOString().slice(0, 10);
@@ -105,52 +159,50 @@ End of Update.`;
     document.getElementById("generatedMessage").value = message;
 }
 
+/* Copy Message */
 function copyMessage() {
     const textArea = document.getElementById("generatedMessage");
     textArea.select();
     document.execCommand("copy");
 }
 
+/* Refresh Checklist (Reset to Base Items Only) */
 function refreshChecklist() {
     document.getElementById("teamMemberName").value = "";
 
-    document.querySelectorAll(".base-item").forEach(box => {
-        box.checked = false;
-    });
+    checklistState = baseItems.map(text => ({
+        text,
+        checked: false,
+        isBase: true
+    }));
 
     document.getElementById("generatedMessage").value = "";
+    renderChecklist();
 }
 
+/* PDF Download */
 function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     const message = document.getElementById("generatedMessage").value;
-
     let extractedDate = null;
 
-    const isoMatch = message.match(/Date:\s*(\d{4}-\d{2}-\d{2})/);
-    const usMatch = message.match(/Date:\s*(\d{1,2}\/\d{1,2}\/\d{4})/);
+    const match = message.match(/Date:\s*(\d{4}-\d{2}-\d{2})/);
+    if (match) extractedDate = match[1];
 
-    if (isoMatch) {
-        extractedDate = isoMatch[1];
-    } else if (usMatch) {
-        const usDate = usMatch[1];
-        const [m, d, y] = usDate.split("/");
-        extractedDate = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-    }
-
-    if (!extractedDate) {
-        const today = new Date();
-        extractedDate = today.toISOString().slice(0, 10);
-    }
+    if (!extractedDate) extractedDate = new Date().toISOString().slice(0, 10);
 
     const filename = `Checklist-Report-${extractedDate}.pdf`;
 
     const lines = doc.splitTextToSize(message, 180);
     doc.text(lines, 15, 15);
+
     doc.save(filename);
 }
+
+/* Initialize */
+refreshChecklist();
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
