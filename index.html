@@ -1,420 +1,67 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Keedian Retail Team — Checklist Manager</title>
-  <style>
-    :root{
-      --bg:#f3f4f6; --card:#ffffff; --muted:#6b7280; --accent:#0b76ef;
-      --danger:#ef4444; --success:#10b981;
-    }
-    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-    body{margin:0;background:var(--bg);padding:28px;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;}
-    .wrap{width:100%;max-width:980px;}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-    h1{margin:0;font-size:20px;}
-    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(15,23,42,0.06);}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-    select,input[type="text"]{padding:8px 10px;border-radius:8px;border:1px solid #e6e7ea;background:white;}
-    button{cursor:pointer;padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:white;font-weight:600;}
-    button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(11,118,239,0.12);}
-    button.danger{background:var(--danger);}
-    button.small{padding:6px 8px;font-size:13px;}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:12px;}
-    .list{padding:12px;border-radius:10px;background:#fbfdff;border:1px solid #eef2ff;min-height:320px;}
-    .item{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;}
-    .item-row{display:flex;align-items:center;gap:12px;}
-    .item-text{font-size:15px;}
-    .item-text.done{text-decoration:line-through;color:var(--muted);}
-    .left-col .toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;}
-    .right-col .panel{padding:12px;background:#fff;border-radius:10px;border:1px solid #f0f3f7;}
-    .muted{color:var(--muted);font-size:13px;}
-    .footer{margin-top:14px;display:flex;gap:8px;justify-content:flex-end;}
-    .template-actions{display:flex;gap:8px;align-items:center;}
-    .danger-outline{background:transparent;border:1px solid rgba(239,68,68,0.12);color:var(--danger);}
-    .success{background:var(--success);border:0;color:white;}
-    textarea{width:100%;height:120px;padding:10px;border-radius:8px;border:1px solid #e6e7ea;}
-    /* mobile */
-    @media (max-width:900px){.grid{grid-template-columns:1fr;}.right-col{order:2}.left-col{order:1}}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keedian Retail Team Checklist</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+  <meta name="theme-color" content="#0b76ef">
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <h1>Keedian Retail Team — Checklist Manager</h1>
-      <div class="muted">Persistent, reusable checklists for overnight ops</div>
-    </header>
-
-    <div class="card">
-      <div class="controls">
-        <div class="template-actions">
-          <label for="templateSelect" class="muted" style="margin-right:8px">Template</label>
-          <select id="templateSelect"></select>
-        </div>
-
-        <input id="newTemplateName" type="text" placeholder="New template name (enter to create)" />
-        <button id="createTemplateBtn" class="ghost small">Create</button>
-
-        <button id="renameTemplateBtn" class="ghost small">Rename</button>
-        <button id="deleteTemplateBtn" class="danger-outline small">Delete Template</button>
-
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-          <button id="exportBtn" class="ghost small">Export JSON</button>
-          <button id="importBtn" class="ghost small">Import JSON</button>
-          <input id="fileInput" type="file" accept="application/json" style="display:none"/>
-        </div>
-      </div>
-
-      <div class="grid">
-        <div class="left-col">
-          <div class="list" id="itemsList">
-            <div class="toolbar">
-              <input id="addItemInput" type="text" placeholder="Add new item..." style="flex:1" />
-              <button id="addItemBtn">Add</button>
-              <button id="resetBtn" class="ghost small">Reset</button>
-              <button id="clearDoneBtn" class="ghost small">Clear Done</button>
-            </div>
-
-            <div id="itemsContainer" style="display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-
-          <div class="footer">
-            <div class="muted" style="margin-right:auto">Changes saved automatically to localStorage.</div>
-            <button id="printBtn" class="ghost small">Print</button>
-          </div>
-        </div>
-
-        <div class="right-col">
-          <div class="panel">
-            <h3 style="margin-top:0">Template details</h3>
-            <div class="muted" style="margin-bottom:10px">Manage templates and backup/restore.</div>
-
-            <strong>Default Overnight Items</strong>
-            <ul style="margin-top:8px">
-              <li>Vaccine Case Alarms Checked</li>
-              <li>JCP Alarms reviewed for winter issues</li>
-              <li>Follow-ups for clients</li>
-              <li>Overflow emails from end of shift</li>
-              <li>Review any project work for retail clients</li>
-            </ul>
-
-            <hr style="margin:12px 0" />
-
-            <div style="display:flex;gap:8px;margin-bottom:8px">
-              <button id="downloadAllBtn" class="small">Download All Templates</button>
-              <button id="restoreDefaultsBtn" class="small danger-outline">Restore Defaults</button>
-            </div>
-
-            <div style="margin-top:8px">
-              <label class="muted">Import JSON (paste)</label>
-              <textarea id="importTextarea" placeholder='Paste JSON here then click "Apply Import"'></textarea>
-              <div style="display:flex;gap:8px;margin-top:8px">
-                <button id="applyImportBtn" class="small">Apply Import</button>
-                <button id="clearImportBtn" class="small ghost">Clear</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+<body class="bg-gray-100 p-6">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">Keedian Retail Team Checklist</h1>
+    <div class="flex justify-between mb-4">
+      <select id="templateSelect" class="border p-2 rounded">
+        <option value="overnight">Overnight Checklist</option>
+        <option value="daily">Daily Checklist</option>
+        <option value="weekend">Weekend Checklist</option>
+      </select>
+      <button id="resetBtn" class="bg-red-500 text-white px-3 py-1 rounded">Reset</button>
+    </div>
+    <ul id="checklist" class="list-disc pl-6 space-y-2 mb-4"></ul>
+    <div class="flex gap-2">
+      <input id="newItem" type="text" placeholder="Add new item" class="border p-2 rounded flex-1">
+      <button id="addBtn" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
     </div>
   </div>
-
-<script>
-/*
-  Keedian Checklist Manager (single-file)
-  - Persistent templates saved under localStorage key 'keedian_templates_v1'
-  - Functions: create/rename/delete template, add/delete/toggle items, reset, export/import JSON
-*/
-(function(){
-  const STORAGE_KEY = 'keedian_templates_v1';
-
-  const defaultTemplates = {
-    "overnight": [
-      { id: generateId(), text: "Vaccine Case Alarms Checked", done: false },
-      { id: generateId(), text: "JCP Alarms reviewed for winter issues", done: false },
-      { id: generateId(), text: "Follow-ups for clients", done: false },
-      { id: generateId(), text: "Overflow emails from end of shift", done: false },
-      { id: generateId(), text: "Review any project work for retail clients", done: false }
-    ],
-    "custom": []
-  };
-
-  // State
-  let templates = loadTemplates();
-  let currentTemplate = Object.keys(templates)[0] || 'overnight';
-
-  // DOM refs
-  const templateSelect = document.getElementById('templateSelect');
-  const newTemplateName = document.getElementById('newTemplateName');
-  const createTemplateBtn = document.getElementById('createTemplateBtn');
-  const renameTemplateBtn = document.getElementById('renameTemplateBtn');
-  const deleteTemplateBtn = document.getElementById('deleteTemplateBtn');
-  const itemsContainer = document.getElementById('itemsContainer');
-  const addItemInput = document.getElementById('addItemInput');
-  const addItemBtn = document.getElementById('addItemBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const clearDoneBtn = document.getElementById('clearDoneBtn');
-  const exportBtn = document.getElementById('exportBtn');
-  const importBtn = document.getElementById('importBtn');
-  const fileInput = document.getElementById('fileInput');
-  const importTextarea = document.getElementById('importTextarea');
-  const applyImportBtn = document.getElementById('applyImportBtn');
-  const clearImportBtn = document.getElementById('clearImportBtn');
-  const restoreDefaultsBtn = document.getElementById('restoreDefaultsBtn');
-  const downloadAllBtn = document.getElementById('downloadAllBtn');
-  const printBtn = document.getElementById('printBtn');
-
-  // Initialize UI
-  renderTemplateOptions();
-  templateSelect.value = currentTemplate;
-  renderItems();
-
-  // Event bindings
-  templateSelect.addEventListener('change', (e) => {
-    currentTemplate = e.target.value;
-    renderItems();
-  });
-
-  createTemplateBtn.addEventListener('click', createTemplateFromInput);
-  newTemplateName.addEventListener('keyup', (e) => { if (e.key === 'Enter') createTemplateFromInput(); });
-
-  renameTemplateBtn.addEventListener('click', () => {
-    const newName = prompt('New name for template', currentTemplate);
-    if (!newName) return;
-    if (templates[newName]) {
-      alert('A template with that name already exists.');
-      return;
-    }
-    templates[newName] = templates[currentTemplate];
-    delete templates[currentTemplate];
-    currentTemplate = newName;
-    saveTemplates();
-    renderTemplateOptions();
-    templateSelect.value = currentTemplate;
-    renderItems();
-  });
-
-  deleteTemplateBtn.addEventListener('click', () => {
-    if (!confirm(`Delete template "${currentTemplate}"? This cannot be undone.`)) return;
-    delete templates[currentTemplate];
-    const keys = Object.keys(templates);
-    currentTemplate = keys[0] || 'overnight';
-    if (!templates[currentTemplate]) templates = {...defaultTemplates};
-    saveTemplates();
-    renderTemplateOptions();
-    templateSelect.value = currentTemplate;
-    renderItems();
-  });
-
-  addItemBtn.addEventListener('click', () => {
-    const txt = addItemInput.value.trim();
-    if (!txt) return;
-    addItem(txt);
-    addItemInput.value = '';
-    addItemInput.focus();
-  });
-  addItemInput.addEventListener('keyup', e => { if (e.key === 'Enter') addItemBtn.click(); });
-
-  resetBtn.addEventListener('click', () => {
-    if (!confirm('Reset all items to undone for this template?')) return;
-    templates[currentTemplate] = templates[currentTemplate].map(it => ({...it, done:false}));
-    saveTemplates(); renderItems();
-  });
-
-  clearDoneBtn.addEventListener('click', () => {
-    templates[currentTemplate] = templates[currentTemplate].filter(it => !it.done);
-    saveTemplates(); renderItems();
-  });
-
-  exportBtn.addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(templates, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'keedian_templates.json'; document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
-  });
-
-  importBtn.addEventListener('click', () => { fileInput.click(); });
-  fileInput.addEventListener('change', (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const parsed = JSON.parse(ev.target.result);
-        if (typeof parsed !== 'object') throw new Error('invalid');
-        if (!confirm('Apply imported templates? This will replace your existing templates.')) return;
-        templates = normalizeImportedTemplates(parsed);
-        saveTemplates(); renderTemplateOptions(); templateSelect.value = currentTemplate; renderItems();
-        alert('Imported templates applied.');
-      } catch (err) { alert('Failed to import JSON: ' + err.message); }
+  <script>
+    const templates = {
+      overnight: ["Vaccine Case Alarms Checked","JCP Alarms Reviewed for Winter Issues","Follow-ups for Clients","Overflow Emails from End of Shift","Review Project Work"],
+      daily: ["JIRA Tickets","Paycom Training","Daily Team Sync","Workday Tasks","DD Portal Review"],
+      weekend: ["Audit Systems","Inventory Review","Server Backups","Emails Review"]
     };
-    reader.readAsText(f);
-    fileInput.value = '';
-  });
 
-  applyImportBtn.addEventListener('click', () => {
-    const txt = importTextarea.value.trim();
-    if (!txt) { alert('Paste JSON into the textarea first'); return; }
-    try {
-      const parsed = JSON.parse(txt);
-      if (!confirm('Apply imported templates? This will replace your existing templates.')) return;
-      templates = normalizeImportedTemplates(parsed);
-      saveTemplates(); renderTemplateOptions(); templateSelect.value = currentTemplate; renderItems();
-      alert('Imported templates applied.');
-      importTextarea.value = '';
-    } catch (err) {
-      alert('Invalid JSON: ' + err.message);
-    }
-  });
+    let currentTemplate = 'overnight';
 
-  clearImportBtn.addEventListener('click', () => importTextarea.value = '');
-
-  restoreDefaultsBtn.addEventListener('click', () => {
-    if (!confirm('Restore default templates? This will overwrite current templates.')) return;
-    templates = JSON.parse(JSON.stringify(defaultTemplates));
-    currentTemplate = Object.keys(templates)[0];
-    saveTemplates(); renderTemplateOptions(); templateSelect.value = currentTemplate; renderItems();
-  });
-
-  downloadAllBtn.addEventListener('click', () => {
-    const data = JSON.stringify(templates, null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'keedian_templates_all.json'; document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
-  });
-
-  printBtn.addEventListener('click', () => window.print());
-
-  // Core functions
-  function renderTemplateOptions(){
-    templateSelect.innerHTML = '';
-    Object.keys(templates).forEach(key => {
-      const opt = document.createElement('option');
-      opt.value = key; opt.textContent = key;
-      templateSelect.appendChild(opt);
-    });
-    if (!templates[currentTemplate]) currentTemplate = Object.keys(templates)[0];
-  }
-
-  function renderItems(){
-    itemsContainer.innerHTML = '';
-    const list = templates[currentTemplate] || [];
-    if (!Array.isArray(list)) templates[currentTemplate] = [];
-    list.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'item';
-      const left = document.createElement('div'); left.className='item-row';
-      const checkbox = document.createElement('input'); checkbox.type='checkbox'; checkbox.checked = !!item.done;
-      checkbox.addEventListener('change', () => { toggleItem(item.id); });
-      const span = document.createElement('div'); span.className='item-text'; span.textContent = item.text;
-      if (item.done) span.classList.add('done');
-      left.appendChild(checkbox); left.appendChild(span);
-
-      const right = document.createElement('div');
-      const toggleBtn = document.createElement('button'); toggleBtn.className='small ghost'; toggleBtn.textContent = item.done ? 'Undo' : 'Done';
-      toggleBtn.addEventListener('click', () => toggleItem(item.id));
-      const deleteBtn = document.createElement('button'); deleteBtn.className='small danger-outline'; deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', () => {
-        if (!confirm('Delete this item?')) return;
-        deleteItem(item.id);
+    function renderChecklist(){
+      const container = document.getElementById('checklist');
+      container.innerHTML = '';
+      templates[currentTemplate].forEach((item, i)=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<input type='checkbox' class='mr-2'>${item}`;
+        container.appendChild(li);
       });
-      right.appendChild(toggleBtn); right.appendChild(deleteBtn);
+    }
 
-      row.appendChild(left); row.appendChild(right);
-      itemsContainer.appendChild(row);
+    document.getElementById('templateSelect').addEventListener('change', (e)=>{
+      currentTemplate = e.target.value;
+      renderChecklist();
     });
 
-    // If empty show hint
-    if (list.length === 0){
-      const hint = document.createElement('div');
-      hint.className = 'muted';
-      hint.style.padding = '12px';
-      hint.textContent = 'No items in this template—add one using the input above.';
-      itemsContainer.appendChild(hint);
-    }
-  }
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      renderChecklist();
+    });
 
-  function addItem(text){
-    const item = { id: generateId(), text: text, done: false };
-    templates[currentTemplate] = templates[currentTemplate] || [];
-    templates[currentTemplate].push(item);
-    saveTemplates(); renderItems();
-  }
-
-  function toggleItem(id){
-    templates[currentTemplate] = templates[currentTemplate].map(it => it.id === id ? {...it, done: !it.done} : it);
-    saveTemplates(); renderItems();
-  }
-
-  function deleteItem(id){
-    templates[currentTemplate] = templates[currentTemplate].filter(it => it.id !== id);
-    saveTemplates(); renderItems();
-  }
-
-  function saveTemplates(){
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
-    } catch (e) {
-      console.error('Failed to save templates', e);
-    }
-  }
-
-  function loadTemplates(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultTemplates));
-        currentTemplate = Object.keys(defaultTemplates)[0];
-        return JSON.parse(JSON.stringify(defaultTemplates));
+    document.getElementById('addBtn').addEventListener('click', ()=>{
+      const val = document.getElementById('newItem').value.trim();
+      if(val){
+        templates[currentTemplate].push(val);
+        document.getElementById('newItem').value = '';
+        renderChecklist();
       }
-      const parsed = JSON.parse(raw);
-      // ensure default structure if missing
-      if (!parsed.overnight) parsed.overnight = defaultTemplates.overnight;
-      if (!parsed.custom) parsed.custom = parsed.custom || [];
-      currentTemplate = Object.keys(parsed)[0] || 'overnight';
-      return parsed;
-    } catch (err) {
-      console.warn('Corrupt stored templates; restoring defaults.', err);
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultTemplates));
-      currentTemplate = Object.keys(defaultTemplates)[0];
-      return JSON.parse(JSON.stringify(defaultTemplates));
-    }
-  }
-
-  function normalizeImportedTemplates(parsed){
-    // convert to expected shape: {name: [{id,text,done}, ...], ...}
-    const result = {};
-    Object.keys(parsed).forEach(k => {
-      const arr = parsed[k];
-      if (!Array.isArray(arr)) return;
-      result[k] = arr.map(it => ({
-        id: it.id || generateId(),
-        text: String(it.text || '').trim(),
-        done: !!it.done
-      })).filter(it => it.text.length > 0);
     });
-    if (Object.keys(result).length === 0) {
-      throw new Error('Imported JSON did not contain any valid templates.');
-    }
-    // keep same current template if possible
-    if (!result[currentTemplate]) currentTemplate = Object.keys(result)[0];
-    return result;
-  }
 
-  function generateId(){
-    return Math.floor(Date.now() * Math.random()).toString(36);
-  }
-
-  // utility: add enter/escape behavior for import textarea
-  // expose minor functions to window (for debugging)
-  window.__keedian = { get templates(){return templates}, saveTemplates };
-
-})();
-</script>
+    renderChecklist();
+  </script>
 </body>
 </html>
