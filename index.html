@@ -3,33 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Keedian Retail Overnight Checklist</title>
+<title>Keedian Overnight Checklist</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
 <meta name="theme-color" content="#0b76ef">
 <style>
 input[type=checkbox] { cursor: pointer; }
 li { display: flex; align-items: center; }
+textarea { resize: none; }
 </style>
 </head>
 
-<body class="bg-gray-100 p-6">
-<div class="max-w-4xl mx-auto">
-    
-<h1 class="text-3xl font-bold text-center mb-6">Overnight Team Checklist</h1>
+<body class="bg-gray-50 font-sans p-6">
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8">
 
-<div class="flex justify-between mb-4">
-    <button id="refreshBtn" class="bg-gray-500 text-white px-3 py-1 rounded">Refresh</button>
-    <button id="saveBtn" class="bg-green-600 text-white px-3 py-1 rounded">Save</button>
-</div>
+    <!-- Header -->
+    <h1 class="text-4xl font-bold text-center text-blue-700 mb-8">Keedian Retail Overnight Checklist</h1>
 
-<ul id="checklist" class="list-disc pl-6 space-y-2 mb-4"></ul>
+    <!-- Control Buttons -->
+    <div class="flex justify-end gap-3 mb-6">
+        <button id="refreshBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg shadow">Refresh</button>
+        <button id="saveBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow">Save</button>
+    </div>
 
-<div class="flex gap-2 mb-6">
-    <input id="newItem" type="text" placeholder="Add new item" class="border p-2 rounded flex-1">
-    <button id="addBtn" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
-</div>
+    <!-- Checklist -->
+    <ul id="checklist" class="list-disc pl-6 space-y-3 mb-6"></ul>
 
-<textarea id="summaryOutput" class="w-full h-40 border p-3 rounded" placeholder="Summary will generate here automatically…"></textarea>
+    <!-- Add New Item -->
+    <div class="flex gap-2 mb-6">
+        <input id="newItem" type="text" placeholder="Add new item" class="border p-3 rounded-lg flex-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">Add</button>
+    </div>
+
+    <!-- Auto-Generated Teams Message -->
+    <div class="mb-3">
+        <label class="block font-semibold mb-2 text-gray-700">Auto-Generated Teams Message</label>
+        <textarea id="summaryOutput" class="w-full h-48 border rounded-lg p-4 shadow-sm bg-gray-50 text-gray-800" readonly></textarea>
+    </div>
+    <div class="text-right">
+        <button id="copyBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow">Copy to Clipboard</button>
+    </div>
 
 </div>
 
@@ -42,6 +54,7 @@ const template = [
     "Review Project Work"
 ];
 
+// Load saved checklist from localStorage
 function loadState() {
     const saved = JSON.parse(localStorage.getItem('overnightChecklist'));
     return saved ? saved : template.map(item => ({ text: item, checked: false }));
@@ -53,16 +66,18 @@ function saveState() {
     localStorage.setItem('overnightChecklist', JSON.stringify(checklistState));
 }
 
+// Render the checklist
 function renderChecklist() {
     const container = document.getElementById('checklist');
     container.innerHTML = '';
 
     checklistState.forEach((item, i) => {
         const li = document.createElement('li');
+        li.className = "flex items-center gap-3";
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.className = 'mr-2';
+        checkbox.className = 'w-5 h-5';
         checkbox.checked = item.checked;
         checkbox.addEventListener('change', () => {
             item.checked = checkbox.checked;
@@ -72,6 +87,7 @@ function renderChecklist() {
 
         const label = document.createElement('label');
         label.textContent = item.text;
+        label.className = "text-gray-800 font-medium";
 
         li.appendChild(checkbox);
         li.appendChild(label);
@@ -81,25 +97,7 @@ function renderChecklist() {
     generateSummary();
 }
 
-document.getElementById('refreshBtn').addEventListener('click', () => {
-    location.reload();
-});
-
-document.getElementById('saveBtn').addEventListener('click', () => {
-    saveState();
-    alert("Checklist saved!");
-});
-
-document.getElementById('addBtn').addEventListener('click', () => {
-    const val = document.getElementById('newItem').value.trim();
-    if (val) {
-        checklistState.push({ text: val, checked: false });
-        document.getElementById('newItem').value = '';
-        saveState();
-        renderChecklist();
-    }
-});
-
+// Generate Teams message
 function generateSummary() {
     const date = new Date().toLocaleDateString();
     const completed = checklistState.filter(i => i.checked).map(i => "- " + i.text).join("\n");
@@ -117,8 +115,28 @@ ${incomplete || "- None"}`;
     document.getElementById('summaryOutput').value = summary;
 }
 
+// Button Events
+document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
+document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert("Checklist saved!"); });
+document.getElementById('addBtn').addEventListener('click', () => {
+    const val = document.getElementById('newItem').value.trim();
+    if (val) {
+        checklistState.push({ text: val, checked: false });
+        document.getElementById('newItem').value = '';
+        saveState();
+        renderChecklist();
+    }
+});
+document.getElementById('copyBtn').addEventListener('click', () => {
+    const textarea = document.getElementById('summaryOutput');
+    textarea.select();
+    navigator.clipboard.writeText(textarea.value).then(() => {
+        alert("Teams message copied to clipboard!");
+    });
+});
+
+// Initial render
 renderChecklist();
 </script>
-
 </body>
 </html>
