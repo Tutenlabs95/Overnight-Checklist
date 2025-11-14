@@ -5,23 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Keedian Overnight Checklist Dashboard</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; transition: background 0.3s, color 0.3s; background-color: #f3f4f6; color: #111827; }
-textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; max-height: 1200px; }
+html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: #f3f4f6; font-family: sans-serif; }
+textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; max-height: 1200px; transition: all 0.2s; }
 button { transition: all 0.2s ease-in-out; }
-li.completed { color: #16a34a; font-weight: 600; }
-li.incomplete { color: #dc2626; font-weight: 600; }
+li.completed { color: #16a34a; font-weight: 600; transition: all 0.2s; }
+li.incomplete { color: #dc2626; font-weight: 600; transition: all 0.2s; }
 .base-item { font-weight: 600; }
+.card { transition: transform 0.2s; }
+.card:hover { transform: scale(1.02); }
 </style>
 </head>
-
-<body class="font-sans">
+<body>
 
 <div id="dashboard" class="w-full max-w-6xl flex flex-col items-center gap-8">
 
     <!-- Header -->
     <div class="text-center">
-        <h1 class="text-5xl font-extrabold text-blue-800 mb-2">Keedian Retail Overnight Dashboard</h1>
+        <h1 class="text-5xl font-extrabold text-blue-800 mb-2">Keedian Overnight Dashboard</h1>
         <p class="text-lg text-gray-600">Streamlined reporting for overnight operations</p>
     </div>
 
@@ -35,10 +37,11 @@ li.incomplete { color: #dc2626; font-weight: 600; }
     <div class="flex gap-4 mb-6">
         <button id="refreshBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Refresh</button>
         <button id="saveBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Save</button>
+        <button id="exportBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Export PDF</button>
     </div>
 
     <!-- Checklist Card -->
-    <div id="checklistCard" class="bg-white shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
+    <div id="checklistCard" class="card bg-gradient-to-r from-white to-blue-50 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center">
         <button id="toggleChecklist" class="flex justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold mb-4">
             Overnight Checklist
         </button>
@@ -52,7 +55,7 @@ li.incomplete { color: #dc2626; font-weight: 600; }
     </div>
 
     <!-- Teams Message Card -->
-    <div id="messageCard" class="bg-white shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center transition-colors">
+    <div id="messageCard" class="card bg-gradient-to-r from-white to-blue-50 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center">
         <label class="block font-semibold mb-2 text-gray-700 text-lg">Teams Message</label>
         <textarea id="summaryOutput" class="w-full border rounded-2xl p-6 shadow-lg bg-gray-50 text-gray-800 text-lg"></textarea>
         <div class="flex gap-4 mt-4">
@@ -63,7 +66,7 @@ li.incomplete { color: #dc2626; font-weight: 600; }
 </div>
 
 <script>
-// Updated base items
+// Base checklist items
 const baseItems = [
     "Vaccine Case Alarms Completed During After Hours",
     "Reviewed and Cleared All Retail Team Client Emails After Hours",
@@ -71,12 +74,10 @@ const baseItems = [
     "Confirmed / Reviewed Retail Team Projects"
 ];
 
-// Load state from localStorage or use base items
+// Load saved state or initialize
 let checklistState = JSON.parse(localStorage.getItem('overnightChecklist')) || baseItems.map(item => ({ text: item, checked: false, isBase: true }));
 
-function saveState() {
-    localStorage.setItem('overnightChecklist', JSON.stringify(checklistState));
-}
+function saveState() { localStorage.setItem('overnightChecklist', JSON.stringify(checklistState)); }
 
 function renderChecklist() {
     const container = document.getElementById('checklist');
@@ -102,7 +103,7 @@ function renderChecklist() {
         li.appendChild(checkbox);
         li.appendChild(label);
 
-        if(!item.isBase) {
+        if(!item.isBase){
             const removeBtn = document.createElement('button');
             removeBtn.textContent = "Remove";
             removeBtn.className = "ml-auto bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full shadow-sm text-sm";
@@ -124,6 +125,7 @@ function generateSummary() {
     const teamMember = document.getElementById('teamMember').value.trim() || "[Team Member]";
     const completed = checklistState.filter(i => i.checked).map(i => "- " + i.text).join("\n");
     const incomplete = checklistState.filter(i => !i.checked).map(i => "- " + i.text).join("\n");
+
     const summary = 
 `Overnight Checklist – ${date}
 Team Member: ${teamMember}
@@ -133,20 +135,27 @@ ${completed || "- None"}
 
 Incomplete:
 ${incomplete || "- None"}`;
+
     const textarea = document.getElementById('summaryOutput');
     if(!textarea.dataset.userEdited) textarea.value = summary;
 }
 
 // Events
 document.getElementById('refreshBtn').addEventListener('click', () => {
+    // Reset checklist to base items
     checklistState = baseItems.map(item => ({ text: item, checked: false, isBase: true }));
+
+    // Clear Team Member input
+    document.getElementById('teamMember').value = '';
+
     saveState();
     renderChecklist();
 });
+
 document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert("Checklist saved!"); });
 document.getElementById('addBtn').addEventListener('click', () => {
     const val = document.getElementById('newItem').value.trim();
-    if(val) { checklistState.push({ text: val, checked: false, isBase: false }); document.getElementById('newItem').value=''; saveState(); renderChecklist();}
+    if(val){ checklistState.push({ text: val, checked: false, isBase:false }); document.getElementById('newItem').value=''; saveState(); renderChecklist();}
 });
 document.getElementById('copyBtn').addEventListener('click', () => {
     const textarea = document.getElementById('summaryOutput');
@@ -154,15 +163,34 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     navigator.clipboard.writeText(textarea.value).then(()=>{alert("Teams message copied!");});
 });
 document.getElementById('teamMember').addEventListener('input', generateSummary);
-
 const textarea = document.getElementById('summaryOutput');
 textarea.addEventListener('input', () => { textarea.dataset.userEdited = true; });
 
-// Collapsible Checklist
+// Ctrl+C shortcut for Teams message
+document.addEventListener('keydown', (e) => {
+    if(e.ctrlKey && e.key === 'c'){
+        const textarea = document.getElementById('summaryOutput');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(()=>{alert("Teams message copied!");});
+        e.preventDefault();
+    }
+});
+
+// Collapsible checklist
 const toggleBtn = document.getElementById('toggleChecklist');
 const checklistContainer = document.getElementById('checklistContainer');
 toggleBtn.addEventListener('click', () => {
     checklistContainer.classList.toggle('hidden');
+});
+
+// Export PDF
+document.getElementById('exportBtn').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    const text = document.getElementById('summaryOutput').value;
+    doc.text(text, 10, 10);
+    doc.save('Overnight_Checklist.pdf');
 });
 
 // Initial render
