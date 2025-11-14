@@ -1,201 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Keedian Overnight Checklist Dashboard</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: #f3f4f6; font-family: sans-serif; }
-textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; max-height: 1200px; transition: all 0.2s; }
-button { transition: all 0.2s ease-in-out; }
-li.completed { color: #16a34a; font-weight: 600; transition: all 0.2s; }
-li.incomplete { color: #dc2626; font-weight: 600; transition: all 0.2s; }
-.base-item { font-weight: 600; }
-.card { transition: transform 0.2s; }
-.card:hover { transform: scale(1.02); }
-</style>
+    <meta charset="UTF-8">
+    <title>Retail Team Checklist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            box-sizing: border-box;
+        }
+
+        .checklist-item {
+            margin: 8px 0;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #generatedMessage {
+            height: 180px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
 
-<div id="dashboard" class="w-full max-w-6xl flex flex-col items-center gap-8">
+<h2>Retail Team After-Hours Checklist</h2>
 
-    <!-- Header -->
-    <div class="text-center">
-        <h1 class="text-5xl font-extrabold text-blue-800 mb-2">Keedian Overnight Dashboard</h1>
-        <p class="text-lg text-gray-600">Streamlined reporting for overnight operations</p>
-    </div>
+<label><b>Team Member Name</b></label>
+<input type="text" id="teamMemberName" placeholder="Enter your name...">
 
-    <!-- Team Member Input -->
-    <div class="flex flex-col w-full max-w-2xl items-start">
-        <label class="font-semibold mb-2">Team Member Name:</label>
-        <input id="teamMember" type="text" placeholder="Enter your name" class="border p-3 rounded-xl w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-    </div>
+<h3>Checklist</h3>
 
-    <!-- Controls -->
-    <div class="flex gap-4 mb-6">
-        <button id="refreshBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Refresh</button>
-        <button id="saveBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Save</button>
-        <button id="exportBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Export PDF</button>
-    </div>
+<div id="checklist">
+    <label class="checklist-item">
+        <input type="checkbox" class="base-item" value="Vaccine Case Alarms Completed During After Hours">
+        Vaccine Case Alarms Completed During After Hours
+    </label>
 
-    <!-- Checklist Card -->
-    <div id="checklistCard" class="card bg-gradient-to-r from-white to-blue-50 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center">
-        <button id="toggleChecklist" class="flex justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-lg font-semibold mb-4">
-            Overnight Checklist
-        </button>
-        <div id="checklistContainer" class="w-full transition-all duration-300 ease-in-out">
-            <ul id="checklist" class="list-disc pl-6 space-y-4 w-full"></ul>
-            <div class="flex gap-3 mt-6 w-full">
-                <input id="newItem" type="text" placeholder="Add new item" class="border p-4 rounded-xl flex-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Add</button>
-            </div>
-        </div>
-    </div>
+    <label class="checklist-item">
+        <input type="checkbox" class="base-item" value="Reviewed and Cleared All Retail Team Client Emails After Hours">
+        Reviewed and Cleared All Retail Team Client Emails After Hours
+    </label>
 
-    <!-- Teams Message Card -->
-    <div id="messageCard" class="card bg-gradient-to-r from-white to-blue-50 shadow-2xl rounded-3xl p-8 w-full flex flex-col items-center">
-        <label class="block font-semibold mb-2 text-gray-700 text-lg">Teams Message</label>
-        <textarea id="summaryOutput" class="w-full border rounded-2xl p-6 shadow-lg bg-gray-50 text-gray-800 text-lg"></textarea>
-        <div class="flex gap-4 mt-4">
-            <button id="copyBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl shadow-lg font-medium hover:scale-105">Copy to Clipboard</button>
-        </div>
-    </div>
+    <label class="checklist-item">
+        <input type="checkbox" class="base-item" value="Retail Team Client Alarms Cleared During Shift">
+        Retail Team Client Alarms Cleared During Shift
+    </label>
 
+    <label class="checklist-item">
+        <input type="checkbox" class="base-item" value="Confirmed / Reviewed Retail Team Projects">
+        Confirmed / Reviewed Retail Team Projects
+    </label>
 </div>
 
+<button onclick="generateMessage()">Generate Teams Message</button>
+<button onclick="copyMessage()">Copy (Ctrl+C Ready)</button>
+<button onclick="refreshChecklist()">Refresh / Reset</button>
+<button onclick="downloadPDF()">Download PDF</button>
+
+<textarea id="generatedMessage" placeholder="Generated Teams Message Will Appear Here..."></textarea>
+
 <script>
-// Base checklist items
-const baseItems = [
-    "Vaccine Case Alarms Completed During After Hours",
-    "Reviewed and Cleared All Retail Team Client Emails After Hours",
-    "Retail Team Client Alarms Cleared During Shift",
-    "Confirmed / Reviewed Retail Team Projects"
-];
+function generateMessage() {
+    const name = document.getElementById("teamMemberName").value || "Team Member";
 
-// Load saved state or initialize
-let checklistState = JSON.parse(localStorage.getItem('overnightChecklist')) || baseItems.map(item => ({ text: item, checked: false, isBase: true }));
+    const items = Array.from(document.querySelectorAll(".base-item"))
+        .filter(box => box.checked)
+        .map(box => "• " + box.value)
+        .join("\n");
 
-function saveState() { localStorage.setItem('overnightChecklist', JSON.stringify(checklistState)); }
+    const today = new Date().toISOString().slice(0, 10);
 
-function renderChecklist() {
-    const container = document.getElementById('checklist');
-    container.innerHTML = '';
-    checklistState.forEach((item, i) => {
-        const li = document.createElement('li');
-        li.className = `${item.checked ? 'completed' : 'incomplete'} flex items-center gap-4`;
-        if(item.isBase) li.classList.add('base-item');
+    const message = 
+`Retail Team – After Hours Checklist
+Team Member: ${name}
+Date: ${today}
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'w-6 h-6';
-        checkbox.checked = item.checked;
-        checkbox.addEventListener('change', () => {
-            item.checked = checkbox.checked;
-            saveState();
-            renderChecklist();
-        });
+Completed Items:
+${items}
 
-        const label = document.createElement('label');
-        label.textContent = item.text;
+End of Update.`;
 
-        li.appendChild(checkbox);
-        li.appendChild(label);
+    document.getElementById("generatedMessage").value = message;
+}
 
-        if(!item.isBase){
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = "Remove";
-            removeBtn.className = "ml-auto bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full shadow-sm text-sm";
-            removeBtn.addEventListener('click', () => {
-                checklistState.splice(i,1);
-                saveState();
-                renderChecklist();
-            });
-            li.appendChild(removeBtn);
-        }
+function copyMessage() {
+    const textArea = document.getElementById("generatedMessage");
+    textArea.select();
+    document.execCommand("copy");
+}
 
-        container.appendChild(li);
+function refreshChecklist() {
+    document.getElementById("teamMemberName").value = "";
+
+    document.querySelectorAll(".base-item").forEach(box => {
+        box.checked = false;
     });
-    generateSummary();
+
+    document.getElementById("generatedMessage").value = "";
 }
 
-function generateSummary() {
-    const date = new Date().toLocaleDateString();
-    const teamMember = document.getElementById('teamMember').value.trim() || "[Team Member]";
-    const completed = checklistState.filter(i => i.checked).map(i => "- " + i.text).join("\n");
-    const incomplete = checklistState.filter(i => !i.checked).map(i => "- " + i.text).join("\n");
-
-    const summary = 
-`Overnight Checklist – ${date}
-Team Member: ${teamMember}
-
-Completed:
-${completed || "- None"}
-
-Incomplete:
-${incomplete || "- None"}`;
-
-    const textarea = document.getElementById('summaryOutput');
-    if(!textarea.dataset.userEdited) textarea.value = summary;
-}
-
-// Events
-document.getElementById('refreshBtn').addEventListener('click', () => {
-    // Reset checklist to base items
-    checklistState = baseItems.map(item => ({ text: item, checked: false, isBase: true }));
-
-    // Clear Team Member input
-    document.getElementById('teamMember').value = '';
-
-    saveState();
-    renderChecklist();
-});
-
-document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert("Checklist saved!"); });
-document.getElementById('addBtn').addEventListener('click', () => {
-    const val = document.getElementById('newItem').value.trim();
-    if(val){ checklistState.push({ text: val, checked: false, isBase:false }); document.getElementById('newItem').value=''; saveState(); renderChecklist();}
-});
-document.getElementById('copyBtn').addEventListener('click', () => {
-    const textarea = document.getElementById('summaryOutput');
-    textarea.select();
-    navigator.clipboard.writeText(textarea.value).then(()=>{alert("Teams message copied!");});
-});
-document.getElementById('teamMember').addEventListener('input', generateSummary);
-const textarea = document.getElementById('summaryOutput');
-textarea.addEventListener('input', () => { textarea.dataset.userEdited = true; });
-
-// Ctrl+C shortcut for Teams message
-document.addEventListener('keydown', (e) => {
-    if(e.ctrlKey && e.key === 'c'){
-        const textarea = document.getElementById('summaryOutput');
-        textarea.select();
-        navigator.clipboard.writeText(textarea.value).then(()=>{alert("Teams message copied!");});
-        e.preventDefault();
-    }
-});
-
-// Collapsible checklist
-const toggleBtn = document.getElementById('toggleChecklist');
-const checklistContainer = document.getElementById('checklistContainer');
-toggleBtn.addEventListener('click', () => {
-    checklistContainer.classList.toggle('hidden');
-});
-
-// Export PDF
-document.getElementById('exportBtn').addEventListener('click', () => {
+function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFontSize(12);
-    const text = document.getElementById('summaryOutput').value;
-    doc.text(text, 10, 10);
-    doc.save('Overnight_Checklist.pdf');
-});
 
-// Initial render
-renderChecklist();
+    const message = document.getElementById("generatedMessage").value;
+
+    let extractedDate = null;
+
+    const isoMatch = message.match(/Date:\s*(\d{4}-\d{2}-\d{2})/);
+    const usMatch = message.match(/Date:\s*(\d{1,2}\/\d{1,2}\/\d{4})/);
+
+    if (isoMatch) {
+        extractedDate = isoMatch[1];
+    } else if (usMatch) {
+        const usDate = usMatch[1];
+        const [m, d, y] = usDate.split("/");
+        extractedDate = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+    }
+
+    if (!extractedDate) {
+        const today = new Date();
+        extractedDate = today.toISOString().slice(0, 10);
+    }
+
+    const filename = `Checklist-Report-${extractedDate}.pdf`;
+
+    const lines = doc.splitTextToSize(message, 180);
+    doc.text(lines, 15, 15);
+    doc.save(filename);
+}
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </body>
 </html>
