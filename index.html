@@ -6,7 +6,7 @@
 <title>Keedian Overnight Checklist Dashboard</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
 <style>
-html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; transition: background 0.3s, color 0.3s; }
+html, body { height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; transition: background 0.3s, color 0.3s; background-color: #f3f4f6; color: #111827; }
 textarea { resize: both; min-width: 400px; min-height: 450px; max-width: 100%; max-height: 1200px; }
 button { transition: all 0.2s ease-in-out; }
 li.completed { color: #16a34a; font-weight: 600; }
@@ -14,7 +14,8 @@ li.incomplete { color: #dc2626; font-weight: 600; }
 .base-item { font-weight: 600; }
 </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
+
+<body class="font-sans">
 
 <div id="dashboard" class="w-full max-w-6xl flex flex-col items-center gap-8">
 
@@ -24,8 +25,11 @@ li.incomplete { color: #dc2626; font-weight: 600; }
         <p class="text-lg text-gray-600">Streamlined reporting for overnight operations</p>
     </div>
 
-    <!-- Mode Toggle -->
-    <button id="modeToggle" class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg font-semibold hover:scale-105 mb-6">Toggle Dark/Light Mode</button>
+    <!-- Team Member Input -->
+    <div class="flex flex-col w-full max-w-2xl items-start">
+        <label class="font-semibold mb-2">Team Member Name:</label>
+        <input id="teamMember" type="text" placeholder="Enter your name" class="border p-3 rounded-xl w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
 
     <!-- Controls -->
     <div class="flex gap-4 mb-6">
@@ -59,15 +63,15 @@ li.incomplete { color: #dc2626; font-weight: 600; }
 </div>
 
 <script>
-// Base items
+// Updated base items
 const baseItems = [
-    "Vaccine Case Alarms Checked",
-    "JCP Alarms Reviewed for Winter Issues",
-    "Follow-ups for Clients",
-    "Overflow Emails from End of Shift",
-    "Review Project Work"
+    "Vaccine Case Alarms Completed During After Hours",
+    "Reviewed and Cleared All Retail Team Client Emails After Hours",
+    "Retail Team Client Alarms Cleared During Shift",
+    "Confirmed / Reviewed Retail Team Projects"
 ];
 
+// Load state from localStorage or use base items
 let checklistState = JSON.parse(localStorage.getItem('overnightChecklist')) || baseItems.map(item => ({ text: item, checked: false, isBase: true }));
 
 function saveState() {
@@ -81,6 +85,7 @@ function renderChecklist() {
         const li = document.createElement('li');
         li.className = `${item.checked ? 'completed' : 'incomplete'} flex items-center gap-4`;
         if(item.isBase) li.classList.add('base-item');
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'w-6 h-6';
@@ -90,10 +95,13 @@ function renderChecklist() {
             saveState();
             renderChecklist();
         });
+
         const label = document.createElement('label');
         label.textContent = item.text;
+
         li.appendChild(checkbox);
         li.appendChild(label);
+
         if(!item.isBase) {
             const removeBtn = document.createElement('button');
             removeBtn.textContent = "Remove";
@@ -105,6 +113,7 @@ function renderChecklist() {
             });
             li.appendChild(removeBtn);
         }
+
         container.appendChild(li);
     });
     generateSummary();
@@ -112,10 +121,12 @@ function renderChecklist() {
 
 function generateSummary() {
     const date = new Date().toLocaleDateString();
+    const teamMember = document.getElementById('teamMember').value.trim() || "[Team Member]";
     const completed = checklistState.filter(i => i.checked).map(i => "- " + i.text).join("\n");
     const incomplete = checklistState.filter(i => !i.checked).map(i => "- " + i.text).join("\n");
     const summary = 
 `Overnight Checklist – ${date}
+Team Member: ${teamMember}
 
 Completed:
 ${completed || "- None"}
@@ -142,35 +153,10 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     textarea.select();
     navigator.clipboard.writeText(textarea.value).then(()=>{alert("Teams message copied!");});
 });
+document.getElementById('teamMember').addEventListener('input', generateSummary);
+
 const textarea = document.getElementById('summaryOutput');
 textarea.addEventListener('input', () => { textarea.dataset.userEdited = true; });
-
-// Dark/Light Mode toggle - now works properly
-const modeToggle = document.getElementById('modeToggle');
-modeToggle.addEventListener('click', () => {
-    const body = document.body;
-    const dashboard = document.getElementById('dashboard');
-    const checklistCard = document.getElementById('checklistCard');
-    const messageCard = document.getElementById('messageCard');
-
-    if(body.classList.contains('dark')) {
-        // Switch to light
-        body.classList.remove('dark','bg-gray-900','text-gray-100');
-        body.classList.add('bg-gray-100','text-gray-900');
-        checklistCard.classList.remove('bg-gray-800','text-gray-100');
-        checklistCard.classList.add('bg-white','text-gray-900');
-        messageCard.classList.remove('bg-gray-800','text-gray-100');
-        messageCard.classList.add('bg-white','text-gray-900');
-    } else {
-        // Switch to dark
-        body.classList.add('dark','bg-gray-900','text-gray-100');
-        body.classList.remove('bg-gray-100','text-gray-900');
-        checklistCard.classList.add('bg-gray-800','text-gray-100');
-        checklistCard.classList.remove('bg-white','text-gray-900');
-        messageCard.classList.add('bg-gray-800','text-gray-100');
-        messageCard.classList.remove('bg-white','text-gray-900');
-    }
-});
 
 // Collapsible Checklist
 const toggleBtn = document.getElementById('toggleChecklist');
